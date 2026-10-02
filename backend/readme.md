@@ -693,7 +693,7 @@ Interactive API documentation can be provided using Swagger UI and OpenAPI.
 
 
 Swagger UI:
-[ADD SWAGGER URL HERE]
+http://localhost:8000/api-docs/
 
 
 The documentation will describe:
@@ -824,3 +824,5 @@ A backend development project focused on building practical APIs and understandi
 # License
 
 ISC
+
+

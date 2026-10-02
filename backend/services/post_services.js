@@ -1,5 +1,9 @@
 const pool = require("../database/db");
-const { badRequestError, conflictError } = require("../utils/errors");
+const {
+  badRequestError,
+  conflictError,
+  authorizationError,
+} = require("../utils/errors");
 
 const createPostService = async (anonymousId, imagePath, text) => {
   if (text.trim() === "") {
@@ -169,57 +173,61 @@ COALESCE(
   return postDetail.rows;
 };
 
-
-
 // deletig post(soft delete)
 const deletePost = async (anonymousId, postId) => {
   const client = await pool.connect();
-  
+
   try {
-      // check for post existence
-  const checkPostExistence = await client.query(
-    `SELECT id,deleted FROM posts WHERE id = $1`,
-    [postId],
-  );
+    // check for post existence
+    const checkPostExistence = await client.query(
+      `SELECT id,deleted,anonymous_id FROM posts WHERE id = $1`,
+      [postId],
+    );
 
-  if (checkPostExistence.rowCount == 0) {
-    throw new notFoundError("Post not found", 404);
-  }
+    if (checkPostExistence.rowCount == 0) {
+      throw new notFoundError("Post not found", 404);
+    }
 
-  //   check if post have being deleted already
-  if (checkPostExistence.rows[0].deleted == true) {
-    throw new conflictError("post has already been deleted", 409);
-  }
+    // note: only admins or post creators are allowed to delete a post
+    if (checkPostExistence.rows[0].anonymous_id != anonymousId) {
+      throw new authorizationError(
+        "You are not permitted to carryout this action",
+        403,
+      );
+    }
 
-  await client.query("BEGIN");
+    //   check if post have being deleted already
+    if (checkPostExistence.rows[0].deleted == true) {
+      throw new conflictError("post has already been deleted", 409);
+    }
 
-  let softDelPost = await client.query(
-    `UPDATE posts SET deleted = true, deleted_at = NOW()
+    await client.query("BEGIN");
+
+    let softDelPost = await client.query(
+      `UPDATE posts SET deleted = true, deleted_at = NOW()
         WHERE id = $1`,
-    [postId],
-  );
+      [postId],
+    );
 
-  let softDelComments = await client.query(
-    `UPDATE comments SET deleted = true, deleted_at = NOW() WHERE
+    let softDelComments = await client.query(
+      `UPDATE comments SET deleted = true, deleted_at = NOW() WHERE
         post_id = $1 AND deleted = false`,
-    [postId],
-  );
+      [postId],
+    );
 
-  let softDelCommentReplies = await client.query(
-    `UPDATE comment_replies SET deleted = true, deleted_at = NOW() WHERE
+    let softDelCommentReplies = await client.query(
+      `UPDATE comment_replies SET deleted = true, deleted_at = NOW() WHERE
         post_id = $1 AND deleted = false`,
-    [postId],
-  );
+      [postId],
+    );
 
-  await client.query("COMMIT");
+    await client.query("COMMIT");
 
-  return true;
-
+    return true;
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
-  }
-  finally{
+  } finally {
     client.release();
   }
 };
@@ -228,5 +236,5 @@ module.exports = {
   createPostService,
   getAllPostDetails,
   getAPostDetail,
-  deletePost
+  deletePost,
 };

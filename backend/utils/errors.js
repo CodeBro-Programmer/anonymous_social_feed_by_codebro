@@ -24,9 +24,19 @@ class conflictError extends Error {
 }
 
 
+class authorizationError extends Error {
+    constructor(message, statusCode) {
+        super(message);
+
+        this.statusCode = statusCode;
+    };
+}
+
+
 
 module.exports = {
     badRequestError,
     notFoundError,
-    conflictError
+    conflictError,
+    authorizationError
 }

@@ -5,9 +5,11 @@ const success = require("../utils/success");
 // IMPORT ALL SERVICES
 const actionService = require("../services/actions_services");
 
+
+
 const likePost = async (req,res,next) => {
     try {
-        const isLiked = await actionService.likePost(req.anonymousId,req.params.id);
+        const isLiked = await actionService.likePost(req.anonymousId,req.params.postId);
 
         if(isLiked === true){
             success(res,201,"post liked successfully");
@@ -20,7 +22,7 @@ const likePost = async (req,res,next) => {
 
 const unlikePost = async (req,res,next)=>{
     try {
-        const isUnliked = await actionService.unlikePost(req.anonymousId,req.params.id);
+        const isUnliked = await actionService.unlikePost(req.anonymousId,req.params.postId);
 
         if(isUnliked === true){
             success(res,200,"post unliked successfully");

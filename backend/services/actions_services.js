@@ -139,9 +139,67 @@ const deleteComment = async (anonymousId, commentId) => {
   }
 };
 
+
+// REPLY COMMENT
+const replyComment = async (anonymousId, commentId, reply)=>{
+    if(!reply){
+        throw new badRequestError("comment reply can be null or empty", 400);
+    }
+
+    const checkForCommentExistence = await pool.query(`SELECT id,post_id FROM comments WHERE id = $1 AND deleted = false`,[commentId]);
+
+    if(checkForCommentExistence.rowCount == 0){
+        throw new notFoundError("comment not found", 404);
+    }
+
+
+    const recordReply = await pool.query(`INSERT INTO comment_replies (
+        post_id,
+        anonymous_id,
+        comment_id,
+        content
+        )
+        VALUES ($1, $2, $3, $4)
+        RETURNING *`,[checkForCommentExistence.rows[0].post_id,anonymousId,commentId,reply]);
+
+
+        if(recordReply.rowCount > 0){
+            return true;
+        }
+
+};
+
+
+const delReply = async (anonymousId,replyId)=>{
+    const checkIfExist = await pool.query(`SELECT * FROM comment_replies WHERE id = $1`,[replyId]);
+
+    if(checkIfExist.rowCount === 0){
+        throw new notFoundError("reply not found", 404);
+    }
+
+    const checkIfDeleted = await pool.query(`SELECT id FROM comment_replies WHERE id = $1 AND deleted = true`,[replyId]);
+
+    if(checkIfDeleted.rowCount > 0){
+        throw new conflictError("reply has been deleted already", 409);
+    }
+
+     let softDelCommentReplies = await pool.query(
+    `UPDATE comment_replies SET deleted = true, deleted_at = NOW() WHERE
+        id = $1 AND deleted = false 
+        RETURNING *`,
+    [replyId],
+  );
+
+  if(softDelCommentReplies.rowCount > 0){
+    return true;
+  }
+};
+
 module.exports = {
   likePost,
   unlikePost,
   addComment,
-  deleteComment
+  deleteComment,
+  replyComment,
+  delReply
 };

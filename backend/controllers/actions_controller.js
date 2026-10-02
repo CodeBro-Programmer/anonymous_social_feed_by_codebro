@@ -58,11 +58,41 @@ const deleteComment = async (req,res,next)=>{
     } catch (error) {
         next(error);
     }
+};
+
+
+// reply comment
+const replyComment = async (req, res, next)=>{
+    try {
+        const replyRecord = await actionService.replyComment(req.anonymousId,req.body.commentId,req.body.reply);
+
+        if(replyRecord === true){
+            success(res, 201, "reply successful");
+        }
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+// delete reply
+const delReply = async (req, res, next) => {
+    try {
+        const replyDeleted = await actionService.delReply(req.anonymousId,req.params.replyId);
+
+        if(replyDeleted === true){
+            success(res, 200, "Reply deleted successfully");
+        }
+    } catch (error) {
+        next(error);
+    }
 }
 
 module.exports = {
     likePost,
     unlikePost,
     addComment,
-    deleteComment
+    deleteComment,
+    replyComment,
+    delReply
 }

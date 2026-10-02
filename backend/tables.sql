@@ -47,5 +47,5 @@ CREATE TABLE comment_replies (
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-     post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE
+    post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE
 );

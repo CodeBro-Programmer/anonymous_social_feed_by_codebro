@@ -80,7 +80,6 @@ res.cookie("anonymous_id", anonymousId, {
 });
 
 
-> The actual cookie name and options used by the application should be documented here if they differ from this example.
 
 The client does not need to manually generate or provide the anonymous ID.
 
@@ -130,7 +129,6 @@ Therefore, the anonymous UUID should **not** be treated as a permanent real-worl
 * **crypto.randomUUID()** — Anonymous identity generation
 * **HTTP cookies** — Anonymous identity persistence
 
-> Add any additional libraries used by the project here.
 
 ---
 
@@ -198,7 +196,23 @@ The post schema contains the fields required to identify the post, associate it 
 ### Post Schema
 
 text
-[ADD YOUR EXACT POST SCHEMA/FIELDS HERE]
+CREATE TABLE posts (
+
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    content TEXT NOT NULL,
+
+    image_path TEXT,
+
+    anonymous_id UUID NOT NULL,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+     deleted BOOLEAN DEFAULT false,
+
+    deleted_at TIMESTAMPTZ
+
+);
 
 
 ### Post Relationships
@@ -216,15 +230,13 @@ Post
 Add the actual endpoints implemented in the project:
 
 text
-POST   [ADD CREATE POST ENDPOINT]
+POST   /api/post/create
 
-GET    [ADD GET POSTS/FEED ENDPOINT]
+GET    /api/post
 
-GET    [ADD GET SINGLE POST ENDPOINT]
+GET    /api/post/:postId
 
-PATCH  [ADD UPDATE POST ENDPOINT]
-
-DELETE [ADD DELETE POST ENDPOINT]
+PATCH  /api/post/delete/:postId
 
 
 ---
@@ -237,13 +249,26 @@ A visitor's anonymous UUID is used to associate the like with the visitor.
 
 ### Like Schema
 
-text
-[ADD YOUR EXACT LIKE SCHEMA/FIELDS HERE]
+CREATE TABLE likes (
+
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+
+    anonymous_id UUID NOT NULL,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    UNIQUE (post_id, anonymous_id)
+
+);
+
+
 
 
 ### Like Relationship
 
-text
+
 Anonymous Identity
         │
         ▼
@@ -261,7 +286,6 @@ text
 UNIQUE (anonymous_id, post_id)
 
 
-> Use the exact constraint implemented in your database.
 
 ### Like Endpoints
 
@@ -283,13 +307,21 @@ A comment contains a reference to the post it belongs to and the anonymous ident
 ### Comment Schema
 
 CREATE TABLE comments (
+
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
     post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+
     anonymous_id UUID NOT NULL,
+
     content TEXT NOT NULL,
+
     deleted BOOLEAN DEFAULT false,
+
     deleted_at TIMESTAMPTZ,
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+
 );
 
 
@@ -306,7 +338,7 @@ Post
 
 ### Comment Endpoints
 
-text
+
 POST   /api/actions/addComment
 
 PATCH  /api/actions/delComment/:commentId
@@ -346,6 +378,7 @@ parent_comment_id
 ### Reply Schema
 
 CREATE TABLE comment_replies (
+
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     comment_id UUID NOT NULL
@@ -491,7 +524,6 @@ Normal queries exclude deleted content
 
 Soft deletion also allows related database records to remain structurally connected where appropriate.
 
-> Document the exact behavior your implementation uses for likes, comments, and replies belonging to a deleted post.
 
 ---
 
@@ -521,7 +553,6 @@ json
 }
 
 
-> Replace this example with the actual response format used by the API.
 
 ---
 
@@ -541,7 +572,7 @@ The API uses HTTP status codes to communicate the result of requests.
 | 422         | Validation error                         |
 | 500         | Internal server error                    |
 
-> Keep this section consistent with the actual status codes returned by your implementation.
+
 
 ---
 
@@ -570,7 +601,7 @@ json
 }
 
 
-> Replace this example with your actual pagination implementation.
+> Not Implemented For Now
 
 ---
 
@@ -595,8 +626,6 @@ json
   "message": "Error message"
 }
 
-
-> Update these examples to match your actual implementation.
 
 ---
 
@@ -625,13 +654,13 @@ Never commit sensitive environment variables or secrets to the repository.
 ### 1. Clone the repository
 
 bash
-git clone [ADD_REPOSITORY_URL]
+git clone https://github.com/CodeBro-Programmer/anonymous_social_feed_by_codebro
 
 
 ### 2. Enter the project directory
 
 bash
-cd [PROJECT_DIRECTORY]
+cd backend
 
 
 ### 3. Install dependencies

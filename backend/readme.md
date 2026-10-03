@@ -93,7 +93,7 @@ The system needs a way to distinguish between different visitors even though the
 
 For example:
 
-text
+
 Anonymous Visitor A
         │
         ├── Post A
@@ -136,7 +136,7 @@ Therefore, the anonymous UUID should **not** be treated as a permanent real-worl
 
 The application follows a REST API architecture.
 
-text
+
 Client
   │
   ▼
@@ -170,7 +170,7 @@ The database is designed around anonymous users and their interactions with post
 
 The main entities are:
 
-text
+
 Anonymous Identity
        │
        ├───────────────┐
@@ -356,7 +356,7 @@ Replies are represented through the comment relationship rather than requiring a
 
 Conceptually:
 
-text
+
 Post
  │
  └── Comment
@@ -368,7 +368,7 @@ Post
 
 A reply references its parent comment.
 
-text
+
 parent_comment_id
         │
         ▼
@@ -467,7 +467,7 @@ The anonymous UUID stored in the request cookie is used for this purpose.
 
 For example:
 
-text
+
 Anonymous ID: A
         │
         ▼
@@ -476,7 +476,7 @@ Anonymous ID: A
 
 If another visitor attempts to modify Post 123:
 
-text
+
 Anonymous ID: B
         │
         ▼
@@ -506,7 +506,7 @@ The record can therefore remain in the database while being excluded from normal
 
 ### Example Flow
 
-text
+
 Delete Request
       │
       ▼
@@ -695,23 +695,35 @@ The API should be tested against both successful and unsuccessful scenarios.
 
 Important test cases include:
 
-text
 ✓ Anonymous visitor can create a post
+
 ✓ Anonymous ID is generated when one does not exist
+
 ✓ Existing anonymous ID is reused
+
 ✓ Anonymous ID is stored in an HTTP-only cookie
+
 ✓ Anonymous visitor can create a comment
+
 ✓ Anonymous visitor can reply to a comment
+
 ✓ Anonymous visitor can like a post
+
 ✓ Same anonymous visitor cannot like the same post twice
+
 ✓ Anonymous visitor can remove their like
+
 ✓ Visitor cannot modify another visitor's post
+
 ✓ Visitor cannot modify another visitor's comment
+
 ✓ Deleted posts are excluded from normal feed results
+
 ✓ Deleted comments are handled correctly
+
 ✓ Invalid request data is rejected
+
 ✓ Invalid resource IDs are handled correctly
-✓ Pagination behaves correctly
 
 
 ---
